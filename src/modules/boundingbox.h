@@ -2,7 +2,21 @@
 
 #include "geometry.h"
 
-struct sphericalboundingbox;
+struct sphericalboundingbox
+{
+	/** theta - phi - radio mínimo de la caja */
+	Vector min;
+	/** theta - phi - radio máximo de la caja */
+	Vector max;
+	/** La normal del plano azimutal que pasa por el límite mínimo de la caja */
+	Vector normal_azimuth_min;
+	/** La normal del plano azimutal que pasa por el límite máximo de la caja */
+	Vector normal_azimuth_max;
+	/** La normal del plano polar que pasa por el límite mínimo de la caja */
+	Vector normal_polar_max;
+	/** La normal del plano polar que pasa por el límite mínimo de la caja */
+	Vector normal_polar_min;
+};
 
 typedef struct sphericalboundingbox SBB;
 

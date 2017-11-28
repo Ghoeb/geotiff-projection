@@ -1,4 +1,4 @@
 *.obj
 obj
-raytracer
+./raytracer
 *.png
