@@ -53,7 +53,7 @@ DEM dem_read_from_file(const char* demfile)
   {
     dem.heightmap[row] = calloc(dem.width, sizeof(int16_t));
 
-    /* NOTE: Mis disculpas por lo que hay a continuación */
+    /* NOTE: Culpo a GDAL por lo que hay a continuación */
     if (GDALRasterIO(
       hBand, /* La banda a leer (raster entero) */
       GF_Read, /* La operación que queremos hacer (lectura) */
@@ -101,6 +101,7 @@ PointCloud dem_to_point_cloud(DEM dem)
 	double lat_per_pixel = radians(dem.geoTransform[5]);
 	double lon_per_pixel = radians(dem.geoTransform[1]);
 
+  /* Grilla de puntos */
 	PointCloud pc =
 	{
 		.height = dem.height,
@@ -109,19 +110,24 @@ PointCloud dem_to_point_cloud(DEM dem)
 
 	pc.cloud = calloc(pc.height, sizeof(Vector*));
 	pc.dem = calloc(pc.height, sizeof(int16_t*));
+  pc.spherical_cloud = calloc(pc.height, sizeof(Vector*));
 
 	#pragma omp parallel for
 	for(int row = 0; row < pc.height; row++)
 	{
+    /* Latitud del punto */
 		double lat = lat_s + lat_per_pixel * row;
 
 		pc.cloud[row] = calloc(pc.width, sizeof(Vector));
-		pc.dem[row] = calloc(pc.height, sizeof(int16_t));
+		pc.dem[row] = calloc(pc.width, sizeof(int16_t));
+    pc.spherical_cloud[row] = calloc(pc.width, sizeof(Vector));
 
 		for(int col = 0; col < pc.width; col++)
 		{
+      /* Longitud del punto */
 			double lon = lon_s + lon_per_pixel * col;
 
+      /* Posición del punto sobre la elipsoide */
 			pc.cloud[row][col] = (Vector)
 			{
 				.X = a * cos(lat) * cos(lon),
@@ -129,13 +135,18 @@ PointCloud dem_to_point_cloud(DEM dem)
 				.Z = c * sin(lat)
 			};
 
+      /* Se le suma su altura para que quede donde corresponde en la tierra */
 			Vector direction = vector_normalized(pc.cloud[row][col]);
-
 			double h = dem.heightmap[row][col];
-
 			vector_add_v(&pc.cloud[row][col], vector_multiplied_f(direction, h));
 
+      /* Altura del punto sobre el nivel del mar */
 			pc.dem[row][col] = dem.heightmap[row][col];
+
+      /* Coordenadas esféricas del punto */
+      pc.spherical_cloud[row][col].X = lat;
+      pc.spherical_cloud[row][col].Y = lon;
+      pc.spherical_cloud[row][col].Z = vector_size(pc.cloud[row][col]);
 		}
 	}
 

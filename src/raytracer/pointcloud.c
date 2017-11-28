@@ -6,6 +6,7 @@
 /** Crea la triangulación de la nube de puntos */
 Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile)
 {
+	/* Cantidad total de triángulos que serán creados */
 	*length = 2*(pc.width - 1)*(pc.height - 1);
 
 	Triangle* tris = calloc(*length, sizeof(Triangle));
