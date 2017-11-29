@@ -28,7 +28,7 @@ static Vector sbb_get_plane_normal(SVector s1, SVector s2)
 	/* La normal del plano */
 	Vector p01 = vector_substracted_v(p1, p0);
 	Vector p02 = vector_substracted_v(p2, p0);
-	return vector_cross(p01, p02);
+	return vector_normalized(vector_cross(p01, p02));
 }
 
 /** Computa los planos que envuelven a la caja */
@@ -120,7 +120,7 @@ static bool sbb_plane_intersect(SBB box, Ray* ray, Vector n, double* t_out)
 	}
 
 	/* Donde intersecta el rayo al plano */
-	double dividend = - vector_dot(ray -> position, n);
+	double dividend = -vector_dot(ray -> position, n);
 	double t = dividend / denominator;
 
 	/* Solo interesa si está adelante del rayo */
@@ -175,13 +175,13 @@ static bool sbb_planes_intersect(SBB box, Ray* ray, double* t_out)
 /** Indica si el rayo chocó con la caja */
 bool sbb_intersects(SBB box, Ray* ray, double* t_out)
 {
+	// printf("Intersecta = %lf\n", *t_out);
 	/* Si el rayo parte dentro de la caja, entonces si o si intersecta */
 	if(sbb_inside(box, ray -> position))
 	{
 		*t_out = 0;
 		return true;
 	}
-
 
 	double t_caps = INFINITY;
 	double t_planes = INFINITY;

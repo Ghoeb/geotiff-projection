@@ -13,7 +13,7 @@ Vector svector_to_cartesian(SVector point)
 /** Convierte el vector a coordenadas esféricas */
 SVector vector_to_spherical(Vector point)
 {
-	double radius = sqrt(vector_dot(point,point));
+	double radius = vector_size(point);
 	double theta = acos(point.Z / radius);
 	double phi = atan2(point.Y, point.X);
 

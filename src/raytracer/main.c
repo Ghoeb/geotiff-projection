@@ -49,15 +49,17 @@ int main(int argc, char *argv[])
 
   printf("Built BVH in %lf seconds\n", elapsed);
 
-  // printf("There are %d triangles\n", length);
+  printf("There are %d triangles\n", bvh -> tri_count);
 
-  // Camera cam = camera_init(pc, atoi(argv[3]), atof(argv[4]));
+  if(bvh -> is_leaf) printf("It's leaf\n");
 
-  // Image* img = camera_render(cam, tris, length);
-  //
-  // img_png_write_to_file(img, argv[2]);
-  //
-  // img_png_destroy(img);
+  Camera cam = camera_init(pc, atoi(argv[3]), atof(argv[4]));
+
+  Image* img = camera_render(cam, bvh, length);
+
+  img_png_write_to_file(img, argv[2]);
+
+  img_png_destroy(img);
 
   free(tris);
 

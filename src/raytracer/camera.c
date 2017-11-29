@@ -12,20 +12,53 @@ static Color vector_to_color(Vector v)
 	return (Color){v.X, v.Y, v.Z};
 }
 
-static Vector ray_trace(Ray* ray, Triangle* tris, int tri_count, Camera cam)
+// static Vector ray_trace(Ray* ray, Triangle* tris, int tri_count, Camera cam)
+// {
+// 	/* Intersecta el rayo con todos los triángulos */
+// 	for(int tri = 0; tri < tri_count; tri++)
+// 	{
+// 		ray_intersect(ray, &tris[tri]);
+// 	}
+//
+// 	// if(aabb_ray_collision(kd -> box, ray, NULL) && kd_intersect_with_closest_triangle(kd, ray))
+// 	// {
+//
+// 	/* Si es que intersectó con algo */
+// 	if(ray -> closestObject)
+// 	{
+// 		Vector bary = ray_get_barycentric(ray);
+//
+// 		Triangle* tri = ray -> closestObject;
+//
+// 		/* Pinta segun la altura del punto intersectado */
+// 		double height = vector_dot(bary, tri -> heights);
+//
+// 		double value = height/cam.max_height;
+//
+// 		return vector_init(value, value, value);
+// 	}
+//
+// 	return cam.background_color;
+// }
+
+static Vector ray_trace(Ray* ray, BVH* bvh, int tri_count, Camera cam)
 {
+	double t = -1;
+
 	/* Intersecta el rayo con todos los triángulos */
-	for(int tri = 0; tri < tri_count; tri++)
-	{
-		ray_intersect(ray, &tris[tri]);
-	}
+	// for(int tri = 0; tri < tri_count; tri++)
+	// {
+	// 	ray_intersect(ray, &tris[tri]);
+	// }
 
 	// if(aabb_ray_collision(kd -> box, ray, NULL) && kd_intersect_with_closest_triangle(kd, ray))
 	// {
 
 	/* Si es que intersectó con algo */
-	if(ray -> closestObject)
+	if(sbb_intersects(bvh -> box, ray, &t) && bvh_intersect(bvh, ray))
 	{
+		printf("Intersection!\n");
+
 		Vector bary = ray_get_barycentric(ray);
 
 		Triangle* tri = ray -> closestObject;
@@ -41,7 +74,7 @@ static Vector ray_trace(Ray* ray, Triangle* tris, int tri_count, Camera cam)
 	return cam.background_color;
 }
 
-static Color get_pixel_color(size_t img_x, size_t img_y, Camera camera, int height, int width, Triangle* tris, int tri_count)
+static Color get_pixel_color(size_t img_x, size_t img_y, Camera camera, int height, int width, BVH* bvh, int tri_count)
 {
   /* Convertimos las coordenadas de la camara a coordenadas reales */
 	double top = camera.sensor_height / 2;
@@ -83,14 +116,14 @@ static Color get_pixel_color(size_t img_x, size_t img_y, Camera camera, int heig
   /* Creamos el rayo de la camara al pixel */
   Ray ray = ray_create(camera.position, Dij);
 
-	Vector pix_color = ray_trace(&ray, tris, tri_count, camera);
+	Vector pix_color = ray_trace(&ray, bvh, tri_count, camera);
 
   vector_clamp(&pix_color, 0, 1);
 
   return vector_to_color(pix_color);
 }
 
-Image* camera_render(Camera camera, Triangle* tris, int tri_count)
+Image* camera_render(Camera camera, BVH* bvh, int tri_count)
 {
 	size_t h = camera.sensor_height * 10000;
 	size_t w = camera.sensor_width * 10000;
@@ -110,7 +143,7 @@ Image* camera_render(Camera camera, Triangle* tris, int tri_count)
 	{
 		for(int x = 0; x < w; x++)
 		{
-			img -> pixels[y][x] = get_pixel_color(x, y, camera, h, w, tris, tri_count);
+			img -> pixels[y][x] = get_pixel_color(x, y, camera, h, w, bvh, tri_count);
 		}
 
 		// #pragma omp critical
