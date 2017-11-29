@@ -3,6 +3,31 @@
 #include <stdio.h>
 #include <omp.h>
 
+/** Toma solo un fragmento cuadrado de la grilla, incluyendo ambos límites */
+PointCloud pc_divide(PointCloud pc, int up, int right, int down, int left)
+{
+	PointCloud ret;
+
+	ret.width = right - left + 1;
+	ret.height = down - up + 1;
+
+	ret.cloud = calloc(ret.height, sizeof(Vector*));
+	ret.dem = calloc(ret.height, sizeof(uint16_t*));
+
+	for(int row = up; row <= down; row++)
+	{
+		ret.cloud[row] = calloc(ret.width, sizeof(Vector));
+		ret.dem[row] = calloc(ret.width, sizeof(uint16_t));
+
+		for(int col = left; col <= right; col++)
+		{
+			ret.cloud[row - up][col - left] = pc.cloud[row][col];
+			ret.dem[row - up][col - left] = pc.dem[row][col];
+		}
+	}
+	return ret;
+}
+
 /** Crea la triangulación de la nube de puntos */
 Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile)
 {
