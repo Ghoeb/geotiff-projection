@@ -47,12 +47,8 @@ AABVH* aabvh_build(PointCloud pc)
 		aabvh -> right_son = aabvh_build(rightpc);
 
 		free(leftpc.cloud);
-		free(rightpc.cloud);
-
-		free(leftpc.spherical_cloud);
-		free(rightpc.spherical_cloud);
-
 		free(leftpc.dem);
+		free(rightpc.cloud);
 		free(rightpc.dem);
 
 		aabvh -> box = aabb_combine(aabvh -> left_son -> box, aabvh -> right_son -> box);

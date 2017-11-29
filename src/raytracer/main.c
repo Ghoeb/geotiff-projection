@@ -4,7 +4,6 @@
 #include "camera.h"
 #include <omp.h>
 #include <time.h>
-#include "bvh.h"
 #include "aabvh.h"
 
 int main(int argc, char *argv[])
@@ -44,20 +43,6 @@ int main(int argc, char *argv[])
 
   start = clock();
 
-  BVH* bvh = bvh_build(pc);
-
-  elapsed = ((double)(clock() - start)) / CLOCKS_PER_SEC;
-
-  printf("Built BVH in %lf seconds\n", elapsed);
-
-  printf("There are %d triangles\n", bvh -> tri_count);
-
-  if(bvh -> is_leaf) printf("It's leaf\n");
-
-  sbb_print(bvh -> box);
-
-  start = clock();
-
   AABVH* aabvh = aabvh_build(pc);
 
   elapsed = ((double)(clock() - start)) / CLOCKS_PER_SEC;
@@ -84,7 +69,7 @@ int main(int argc, char *argv[])
 
   dem_destroy(dem);
 
-  bvh_destroy(bvh);
+  aabvh_destroy(aabvh);
 
 	return 0;
 }
