@@ -4,7 +4,7 @@
 #include <omp.h>
 
 /** Toma solo un fragmento cuadrado de la grilla, incluyendo ambos límites */
-PointCloud pc_divide(PointCloud pc, int up, int right, int down, int left)
+PointCloud pc_divide(PointCloud pc, int up, int down, int left, int right)
 {
 	PointCloud ret;
 
@@ -32,23 +32,12 @@ PointCloud pc_divide(PointCloud pc, int up, int right, int down, int left)
 }
 
 /** Crea la triangulación de la nube de puntos */
-Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile)
+Triangle* pointcloud_triangulate(PointCloud pc, int* length)
 {
 	/* Cantidad total de triángulos que serán creados */
 	*length = 2*(pc.width - 1)*(pc.height - 1);
 
 	Triangle* tris = calloc(*length, sizeof(Triangle));
-
-	FILE* f = fopen(objfile, "w");
-
-	for(int row = 0; row < pc.height; row++)
-	{
-		for(int col = 0; col < pc.width; col++)
-		{
-			Vector v = pc.cloud[row][col];
-			fprintf(f, "v %lf %lf %lf\n", v.X, v.Y, v.Z);
-		}
-	}
 
 	#pragma omp parallel for
 	for(int row = 0; row < pc.height - 1; row++)
@@ -64,11 +53,6 @@ Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile)
 			int16_t hUR = pc.dem[row][col + 1];
 			int16_t hDL = pc.dem[row + 1][col];
 			int16_t hDR = pc.dem[row + 1][col + 1];
-
-			int iUL = 1+row*pc.width + col;
-			int iUR = 1+row*pc.width + col + 1;
-			int iDL = 1+(row+1)*pc.width + col;
-			int iDR = 1+(row+1)*pc.width + col + 1;
 
 			double DL_UR = vector_size_squared(vector_substracted_v(*DL, *UR));
 			double UL_DR = vector_size_squared(vector_substracted_v(*UL, *DR));
@@ -104,14 +88,6 @@ Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile)
 						.Z = hDR
 					}
 				};
-				// triangle_centroid(&tris[len]);
-
-				#pragma omp critical
-				{
-					fprintf(f, "f %d %d %d\n",iDL, iUL, iUR);
-					fprintf(f, "f %d %d %d\n",iDL, iUR, iDR);
-				}
-
 			}
 			else
 			{
@@ -127,8 +103,6 @@ Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile)
 						.Z = hDR
 					}
 				};
-				// triangle_centroid(&tris[len++]);
-
 				tris[len] = (Triangle)
 				{
 					.p1 = UL,
@@ -141,17 +115,9 @@ Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile)
 						.Z = hDL
 					}
 				};
-				// triangle_centroid(&tris[len]);
-				#pragma omp critical
-				{
-					fprintf(f, "f %d %d %d\n",iUL, iUR, iDR);
-					fprintf(f, "f %d %d %d\n",iUL, iDR, iDL);
-				}
 			}
 		}
 	}
-
-	fclose(f);
 
 	return tris;
 }

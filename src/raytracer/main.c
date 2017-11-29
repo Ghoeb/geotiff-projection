@@ -6,11 +6,10 @@
 
 int main(int argc, char *argv[])
 {
-  if(argc != 6)
+  if(argc != 5)
   {
-    printf("Uso: %s <DEM.tif> <tri.obj> <img.png> <tripod> <angle>\ndonde\n", argv[0]);
+    printf("Uso: %s <DEM.tif> <img.png> <tripod> <angle>\ndonde\n", argv[0]);
     printf("\tDEM es el archivo en del DEM (un GeoTIFF)\n");
-    printf("\ttri es el archivo donde se guardará la triangulación del DEM\n");
     printf("\timg es la imagen generada\n");
     printf("\ttripod es la altura del trípode\n");
     printf("\tangle es el angulo de la cámara hacia abajo\n");
@@ -32,17 +31,17 @@ int main(int argc, char *argv[])
 
   int length;
 
-  Triangle* tris = pointcloud_triangulate(pc, &length, argv[2]);
+  Triangle* tris = pointcloud_triangulate(pc, &length);
 
   printf("Triangulated point cloud\n");
 
   // printf("There are %d triangles\n", length);
 
-  Camera cam = camera_init(pc, atoi(argv[4]), atof(argv[5]));
+  Camera cam = camera_init(pc, atoi(argv[3]), atof(argv[4]));
 
   Image* img = camera_render(cam, tris, length);
 
-  img_png_write_to_file(img, argv[3]);
+  img_png_write_to_file(img, argv[2]);
 
   img_png_destroy(img);
 

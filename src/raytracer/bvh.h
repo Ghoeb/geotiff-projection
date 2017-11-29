@@ -4,11 +4,11 @@
 #include "pointcloud.h"
 
 /* Representa un arbol binario de organización espacial */
-struct bounding_volume_hierachy;
+struct bounding_volume_hierarchy;
 /* Representa un arbol binario de organización espacial */
-typedef struct bounding_volume_hierachy BVH;
+typedef struct bounding_volume_hierarchy BVH;
 
-struct bounding_volume_hierachy
+struct bounding_volume_hierarchy
 {
 	/** Caja que envuelve a todos los triangulos de sus hijos */
 	SBB box;

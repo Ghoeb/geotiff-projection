@@ -22,8 +22,8 @@ struct pointcloud
 typedef struct pointcloud PointCloud;
 
 /** Toma solo un fragmento cuadrado de la grilla, incluyendo ambos límites */
-PointCloud pc_divide(PointCloud pc, int up, int right, int down, int left);
+PointCloud pc_divide(PointCloud pc, int up, int down, int left, int right);
 /** Crea la triangulación de la nube de puntos (referenciada) */
-Triangle* pointcloud_triangulate(PointCloud pc, int* length, char* objfile);
+Triangle* pointcloud_triangulate(PointCloud pc, int* length);
 /** Destruye la nube de puntos */
 void pointcloud_destroy(PointCloud pc);
