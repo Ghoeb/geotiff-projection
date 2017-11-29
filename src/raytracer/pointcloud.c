@@ -34,7 +34,7 @@ Triangle* pointcloud_triangulate(PointCloud pc, int* length)
 
 	Triangle* tris = calloc(*length, sizeof(Triangle));
 
-	// #pragma omp parallel for
+	#pragma omp parallel for
 	for(int row = 0; row < pc.height - 1; row++)
 	{
 		for(int col = 0; col < pc.width - 1; col++)

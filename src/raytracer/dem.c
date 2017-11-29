@@ -111,7 +111,7 @@ PointCloud dem_to_point_cloud(DEM dem)
 	pc.dem = calloc(pc.height, sizeof(int16_t*));
   pc.spherical_cloud = calloc(pc.height, sizeof(SVector*));
 
-	// #pragma omp parallel for
+	#pragma omp parallel for
 	for(int row = 0; row < pc.height; row++)
 	{
     /* Latitud del punto */
