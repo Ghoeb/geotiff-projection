@@ -1,13 +1,14 @@
 #pragma once
 
 #include "geometry.h"
+#include "sphericalvector.h"
 
 struct sphericalboundingbox
 {
 	/** theta - phi - radio mínimo de la caja */
-	Vector min;
+	SVector min;
 	/** theta - phi - radio máximo de la caja */
-	Vector max;
+	SVector max;
 	/** La normal del plano azimutal que pasa por el límite mínimo de la caja */
 	Vector normal_azimuth_min;
 	/** La normal del plano azimutal que pasa por el límite máximo de la caja */

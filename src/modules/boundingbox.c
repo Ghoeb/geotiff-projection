@@ -1,48 +1,30 @@
 #include "boundingbox.h"
 #include <math.h>
 
-/** Convierte el vector a coordenadas cartesianas */
-static Vector vector_to_cartesian(Vector point)
-{
-	double X = point.Z * sin(point.X) * cos(point.Y);
-	double Y = point.Z * sin(point.X) * sin(point.Y);
-	double Z = point.Z * cos(point.X);
 
-	return (Vector){.X = X, .Y = Y, .Z = Z};
-}
-
-/** Convierte el vector a coordenadas esféricas */
-static Vector vector_to_spherical(Vector point)
-{
-	double radius = sqrt(vector_dot(point,point));
-	double theta = acos(point.Z / radius);
-	double phi = atan2(point.Y, point.X);
-
-	return (Vector){.X = theta, .Y = phi, .Z = radius};
-}
 
 /** Indica si un punto está dentro de la caja */
 static bool sbb_inside(SBB box, Vector point)
 {
-	Vector spherical = vector_to_spherical(point);
+	SVector spherical = vector_to_spherical(point);
 
-	if(spherical.X < box.min.X) return false;
-	if(spherical.X > box.max.X) return false;
-	if(spherical.Y < box.min.Y) return false;
-	if(spherical.Y > box.max.Y) return false;
-	if(spherical.Z < box.min.Z) return false;
-	if(spherical.Z > box.max.Z) return false;
+	if(spherical.T < box.min.T) return false;
+	if(spherical.T > box.max.T) return false;
+	if(spherical.P < box.min.P) return false;
+	if(spherical.P > box.max.P) return false;
+	if(spherical.R < box.min.R) return false;
+	if(spherical.R > box.max.R) return false;
 
 	return true;
 }
 
 /** Obtiene la normal del plano */
-static Vector sbb_get_plane_normal(Vector s1, Vector s2)
+static Vector sbb_get_plane_normal(SVector s1, SVector s2)
 {
 	/* Los 3 puntos que definen el plano. El origen es obligatorio */
 	Vector p0 = {.X = 0, .Y = 0, .Z = 0};
-	Vector p1 = vector_normalized(vector_to_cartesian(s1));
-	Vector p2 = vector_normalized(vector_to_cartesian(s2));
+	Vector p1 = vector_normalized(svector_to_cartesian(s1));
+	Vector p2 = vector_normalized(svector_to_cartesian(s2));
 	/* La normal del plano */
 	Vector p01 = vector_substracted_v(p1, p0);
 	Vector p02 = vector_substracted_v(p2, p0);
@@ -53,12 +35,12 @@ static Vector sbb_get_plane_normal(Vector s1, Vector s2)
 void sbb_compute_planes(SBB* sbb)
 {
 	/* El vector con mínimo theta y máximo phi */
-	Vector min_t_max_p = sbb -> max;
-	min_t_max_p.X = sbb -> min.X;
+	SVector min_t_max_p = sbb -> max;
+	min_t_max_p.T = sbb -> min.T;
 
 	/* El vector con máximo theta y mínimo phi */
-	Vector max_t_min_p = sbb -> min;
-	max_t_min_p.X = sbb -> max.X;
+	SVector max_t_min_p = sbb -> min;
+	max_t_min_p.T = sbb -> max.T;
 
 	/* El plano correspondiente al mínimo theta */
 	sbb -> normal_polar_min   = sbb_get_plane_normal(sbb -> min, min_t_max_p);
@@ -165,8 +147,8 @@ static bool sbb_caps_intersect(SBB box, Ray* ray, double* t_out)
 	double t_min = INFINITY;
 	double t_max = INFINITY;
 
-	bool does_min_intersect = sbb_cap_intersect(box, ray, box.min.Z, &t_min);
-	bool does_max_intersect = sbb_cap_intersect(box, ray, box.max.Z, &t_max);
+	bool does_min_intersect = sbb_cap_intersect(box, ray, box.min.R, &t_min);
+	bool does_max_intersect = sbb_cap_intersect(box, ray, box.max.R, &t_max);
 
 	*t_out = fmin(t_min, t_max);
 
@@ -218,12 +200,12 @@ SBB sbb_combine(SBB b1, SBB b2)
 {
 	SBB ret;
 
-	ret.min.X = fmin(b1.min.X, b2.min.X);
-	ret.max.X = fmax(b1.max.X, b2.max.X);
-	ret.min.Y = fmin(b1.min.Y, b2.min.Y);
-	ret.max.Y = fmax(b1.max.Y, b2.max.Y);
-	ret.min.Z = fmin(b1.min.Z, b2.min.Z);
-	ret.max.Z = fmax(b1.max.Z, b2.max.Z);
+	ret.min.T = fmin(b1.min.T, b2.min.T);
+	ret.max.T = fmax(b1.max.T, b2.max.T);
+	ret.min.P = fmin(b1.min.P, b2.min.P);
+	ret.max.P = fmax(b1.max.P, b2.max.P);
+	ret.min.R = fmin(b1.min.R, b2.min.R);
+	ret.max.R = fmax(b1.max.R, b2.max.R);
 
 	return ret;
 }
