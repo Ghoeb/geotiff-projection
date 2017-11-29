@@ -15,13 +15,11 @@ PointCloud pc_divide(PointCloud pc, int up, int down, int left, int right)
 
 	ret.cloud = calloc(ret.height, sizeof(Vector*));
 	ret.dem = calloc(ret.height, sizeof(uint16_t*));
-	ret.spherical_cloud = calloc(ret.height, sizeof(SVector*));
 
 	for(int row = up; row <= down; row++)
 	{
 		ret.cloud[row - up] = &pc.cloud[row][left];
 		ret.dem[row - up] = &pc.dem[row][left];
-		ret.spherical_cloud[row - up] = &pc.spherical_cloud[row][left];
 	}
 	return ret;
 }
@@ -126,9 +124,7 @@ void pointcloud_destroy(PointCloud pc)
 	{
 		free(pc.cloud[row]);
 		free(pc.dem[row]);
-		free(pc.spherical_cloud[row]);
 	}
 	free(pc.cloud);
 	free(pc.dem);
-	free(pc.spherical_cloud);
 }
