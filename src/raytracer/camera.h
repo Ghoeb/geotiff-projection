@@ -5,7 +5,7 @@
 #include "../modules/geometry.h"
 #include "../imagelib/imagelib.h"
 #include "pointcloud.h"
-#include "bvh.h"
+#include "aabvh.h"
 
 struct camera
 {
@@ -35,4 +35,4 @@ typedef struct camera Camera;
 Camera camera_init(PointCloud pc, double tripod, double angle);
 /** Genera una imagen a partir de una escena */
 // Image* camera_render(Camera camera, Triangle* tris, int tri_count);
-Image* camera_render(Camera camera, BVH* bvh, int tri_count);
+Image* camera_render(Camera camera, AABVH* bvh, int tri_count);

@@ -23,6 +23,7 @@ Ray ray_create(Vector position, Vector direction)
   // vector_add_v(&ray.position, vector_multiplied_f(direction, RAY_EPSILON));
   ray.direction = direction;
   ray.closestDistance = INFINITY;
+  ray.closestObject = NULL;
   ray.did_intersect = false;
   return ray;
 }
@@ -31,6 +32,8 @@ Ray ray_create(Vector position, Vector direction)
 void ray_reset(Ray* ray)
 {
   ray -> closestDistance = INFINITY;
+  ray -> closestObject = NULL;
+
 }
 
 void ray_intersect(Ray *ray, Triangle* tri)

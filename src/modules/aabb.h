@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../modules/geometry.h"
+#include "geometry.h"
 
 /** Representa una caja alineada a los ejes */
 struct aabb
@@ -20,5 +20,7 @@ bool aabb_is_point_inside(AABB aabb, Vector p);
 bool aabb_ray_collision (AABB aabb, Ray* ray, double* distance);
 /** Indica el eje más ancho de la caja */
 Axis aabb_longest_axis  (AABB aabb);
-
+/** Combina dos cajas, creando una nueva caja que contiene ambas */
+AABB aabb_combine(AABB aabba, AABB aabbb);
+/** Imprime la caja en consola */
 void aabb_print(AABB aabb);

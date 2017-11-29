@@ -5,6 +5,7 @@
 #include <omp.h>
 #include <time.h>
 #include "bvh.h"
+#include "aabvh.h"
 
 int main(int argc, char *argv[])
 {
@@ -55,9 +56,23 @@ int main(int argc, char *argv[])
 
   sbb_print(bvh -> box);
 
+  start = clock();
+
+  AABVH* aabvh = aabvh_build(pc);
+
+  elapsed = ((double)(clock() - start)) / CLOCKS_PER_SEC;
+
+  printf("Built AABVH in %lf seconds\n", elapsed);
+
+  printf("There are %d triangles\n", aabvh -> tri_count);
+
+  if(aabvh -> is_leaf) printf("It's leaf\n");
+
+  aabb_print(aabvh -> box);
+
   Camera cam = camera_init(pc, atoi(argv[3]), atof(argv[4]));
 
-  Image* img = camera_render(cam, bvh, length);
+  Image* img = camera_render(cam, aabvh, length);
 
   img_png_write_to_file(img, argv[2]);
 

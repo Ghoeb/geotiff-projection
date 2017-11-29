@@ -8,10 +8,10 @@ SVector svector_init(double T, double P, double R)
 	{
 		T += 2*M_PI;
 	}
-	if(T > M_PI)
-	{
-		abort();
-	}
+	// if(T > M_PI)
+	// {
+	// 	abort();
+	// }
 	while(P < 0)
 	{
 		P += 2*M_PI;

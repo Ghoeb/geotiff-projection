@@ -41,7 +41,7 @@ static Color vector_to_color(Vector v)
 // 	return cam.background_color;
 // }
 
-static Vector ray_trace(Ray* ray, BVH* bvh, int tri_count, Camera cam)
+static Vector ray_trace(Ray* ray, AABVH* aabvh, int tri_count, Camera cam)
 {
 	double t = -1;
 
@@ -55,10 +55,8 @@ static Vector ray_trace(Ray* ray, BVH* bvh, int tri_count, Camera cam)
 	// {
 
 	/* Si es que intersectó con algo */
-	if(sbb_intersects(bvh -> box, ray, &t) && bvh_intersect(bvh, ray))
+	if(aabb_ray_collision(aabvh -> box, ray, &t) && aabvh_intersect(aabvh, ray))
 	{
-		printf("Intersection!\n");
-
 		Vector bary = ray_get_barycentric(ray);
 
 		Triangle* tri = ray -> closestObject;
@@ -74,7 +72,7 @@ static Vector ray_trace(Ray* ray, BVH* bvh, int tri_count, Camera cam)
 	return cam.background_color;
 }
 
-static Color get_pixel_color(size_t img_x, size_t img_y, Camera camera, int height, int width, BVH* bvh, int tri_count)
+static Color get_pixel_color(size_t img_x, size_t img_y, Camera camera, int height, int width, AABVH* aabvh, int tri_count)
 {
   /* Convertimos las coordenadas de la camara a coordenadas reales */
 	double top = camera.sensor_height / 2;
@@ -116,14 +114,14 @@ static Color get_pixel_color(size_t img_x, size_t img_y, Camera camera, int heig
   /* Creamos el rayo de la camara al pixel */
   Ray ray = ray_create(camera.position, Dij);
 
-	Vector pix_color = ray_trace(&ray, bvh, tri_count, camera);
+	Vector pix_color = ray_trace(&ray, aabvh, tri_count, camera);
 
   vector_clamp(&pix_color, 0, 1);
 
   return vector_to_color(pix_color);
 }
 
-Image* camera_render(Camera camera, BVH* bvh, int tri_count)
+Image* camera_render(Camera camera, AABVH* aabvh, int tri_count)
 {
 	size_t h = camera.sensor_height * 10000;
 	size_t w = camera.sensor_width * 10000;
@@ -136,20 +134,20 @@ Image* camera_render(Camera camera, BVH* bvh, int tri_count)
 
 	// printf("Built KD-Tree\n");
 
-	// double progress = 0;
+	double progress = 0;
 
 	// #pragma omp parallel for
 	for(int y = 0; y < h; y++)
 	{
 		for(int x = 0; x < w; x++)
 		{
-			img -> pixels[y][x] = get_pixel_color(x, y, camera, h, w, bvh, tri_count);
+			img -> pixels[y][x] = get_pixel_color(x, y, camera, h, w, aabvh, tri_count);
 		}
 
 		// #pragma omp critical
 		// {
-		// 	progress += 100/(double)h;
-		// 	printf("%lf%%\n", progress);
+			progress += 100/(double)h;
+			printf("%lf%%\n", progress);
 		// }
 	}
 

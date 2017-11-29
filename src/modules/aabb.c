@@ -92,6 +92,19 @@ void aabb_print(AABB aabb)
 	printf("]\n");
 }
 
+/** Combina dos cajas, creando una nueva caja que contiene ambas */
+AABB aabb_combine(AABB aabba, AABB aabbb)
+{
+	AABB ret;
+	ret.min.X = fmin(aabba.min.X, aabbb.min.X);
+	ret.max.X = fmax(aabba.max.X, aabbb.max.X);
+	ret.min.Y = fmin(aabba.min.Y, aabbb.min.Y);
+	ret.max.Y = fmax(aabba.max.Y, aabbb.max.Y);
+	ret.min.Z = fmin(aabba.min.Z, aabbb.min.Z);
+	ret.max.Z = fmax(aabba.max.Z, aabbb.max.Z);
+	return ret;
+}
+
 /** Indica el eje más ancho de la caja */
 Axis aabb_longest_axis  (AABB aabb)
 {
