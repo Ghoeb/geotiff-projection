@@ -1,5 +1,24 @@
 #include "sphericalvector.h"
 #include <math.h>
+#include <stdlib.h>
+
+SVector svector_init(double T, double P, double R)
+{
+	while(T < 0)
+	{
+		T += 2*M_PI;
+	}
+	if(T > M_PI)
+	{
+		abort();
+	}
+	while(P < 0)
+	{
+		P += 2*M_PI;
+	}
+	return (SVector){.T = T, .P = P, .R = R};
+}
+
 /** Convierte el vector a coordenadas cartesianas */
 Vector svector_to_cartesian(SVector point)
 {
@@ -17,5 +36,5 @@ SVector vector_to_spherical(Vector point)
 	double theta = acos(point.Z / radius);
 	double phi = atan2(point.Y, point.X);
 
-	return (SVector){.T = theta, .P = phi, .R = radius};
+	return svector_init(theta, phi, radius);
 }

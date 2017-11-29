@@ -1,7 +1,6 @@
 #include "boundingbox.h"
 #include <math.h>
-
-
+#include <stdio.h>
 
 /** Indica si un punto está dentro de la caja */
 static bool sbb_inside(SBB box, Vector point)
@@ -208,4 +207,12 @@ SBB sbb_combine(SBB b1, SBB b2)
 	ret.max.R = fmax(b1.max.R, b2.max.R);
 
 	return ret;
+}
+
+/** Imprime una SBB en consola */
+void sbb_print(SBB sbb)
+{
+	printf("T ∈ [%lf %lf]\n", sbb.min.T, sbb.max.T);
+	printf("P ∈ [%lf %lf]\n", sbb.min.P, sbb.max.P);
+	printf("R ∈ [%lf %lf]\n", sbb.min.R, sbb.max.R);
 }

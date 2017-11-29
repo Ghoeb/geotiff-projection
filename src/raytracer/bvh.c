@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#define LEAF_LIMIT 1549548
+#define LEAF_LIMIT 100
 
 /* Intercambia dos valores de tipo double */
 void double_swap(double* x, double* y)
@@ -36,9 +36,6 @@ SBB sbb_build(PointCloud pc)
 		}
 	}
 
-	printf("%lf %lf %lf\n", box.min.T, box.min.P, box.min.R);
-	printf("%lf %lf %lf\n", box.max.T, box.max.P, box.max.R);
-
 	return box;
 }
 
@@ -57,11 +54,6 @@ BVH* bvh_build(PointCloud pc)
 
 		bvh -> box = sbb_build(pc);
 		sbb_compute_planes(&bvh -> box);
-
-		vector_print(bvh -> box.normal_azimuth_max);
-		vector_print(bvh -> box.normal_azimuth_min);
-		vector_print(bvh -> box.normal_polar_min);
-		vector_print(bvh -> box.normal_polar_max);
 
 		bvh -> tris = pointcloud_triangulate(pc, &bvh -> tri_count);
 

@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
 
   if(bvh -> is_leaf) printf("It's leaf\n");
 
+  sbb_print(bvh -> box);
+
   Camera cam = camera_init(pc, atoi(argv[3]), atof(argv[4]));
 
   Image* img = camera_render(cam, bvh, length);

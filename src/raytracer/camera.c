@@ -130,13 +130,13 @@ Image* camera_render(Camera camera, BVH* bvh, int tri_count)
 
 	Image* img = img_png_init(h, w);
 
-	// printf("Generando imagen de %zux%zu\n",h,w);
+	printf("Generating %zux%zu image\n",h,w);
 
 	// KDTree* kd = kd_build(tris, tri_count, 0);
 
 	// printf("Built KD-Tree\n");
 
-	double progress = 0;
+	// double progress = 0;
 
 	// #pragma omp parallel for
 	for(int y = 0; y < h; y++)
@@ -147,10 +147,10 @@ Image* camera_render(Camera camera, BVH* bvh, int tri_count)
 		}
 
 		// #pragma omp critical
-		{
-			progress += 100/(double)h;
-			printf("%lf%%\n", progress);
-		}
+		// {
+		// 	progress += 100/(double)h;
+		// 	printf("%lf%%\n", progress);
+		// }
 	}
 
 	// kd_destroy(kd);

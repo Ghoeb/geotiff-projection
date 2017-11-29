@@ -143,9 +143,7 @@ PointCloud dem_to_point_cloud(DEM dem)
 			pc.dem[row][col] = dem.heightmap[row][col];
 
       /* Coordenadas esféricas del punto */
-      pc.spherical_cloud[row][col].T = lat;
-      pc.spherical_cloud[row][col].P = lon;
-      pc.spherical_cloud[row][col].R = vector_size(pc.cloud[row][col]);
+      pc.spherical_cloud[row][col] = svector_init(lat, lon, vector_size(pc.cloud[row][col]));
 		}
 	}
 
