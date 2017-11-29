@@ -105,7 +105,7 @@ Image* camera_render(Camera camera, Triangle* tris, int tri_count)
 
 	double progress = 0;
 
-	#pragma omp parallel for
+	// #pragma omp parallel for
 	for(int y = 0; y < h; y++)
 	{
 		for(int x = 0; x < w; x++)
@@ -113,7 +113,7 @@ Image* camera_render(Camera camera, Triangle* tris, int tri_count)
 			img -> pixels[y][x] = get_pixel_color(x, y, camera, h, w, tris, tri_count);
 		}
 
-		#pragma omp critical
+		// #pragma omp critical
 		{
 			progress += 100/(double)h;
 			printf("%lf%%\n", progress);

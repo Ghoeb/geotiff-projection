@@ -6,6 +6,8 @@
 /** Toma solo un fragmento cuadrado de la grilla, incluyendo ambos límites */
 PointCloud pc_divide(PointCloud pc, int up, int down, int left, int right)
 {
+	// printf("Tomando subpc entre [%d %d] y [%d %d]\n", up, down, left, right);
+
 	PointCloud ret;
 
 	ret.width = right - left + 1;
@@ -17,16 +19,9 @@ PointCloud pc_divide(PointCloud pc, int up, int down, int left, int right)
 
 	for(int row = up; row <= down; row++)
 	{
-		ret.cloud[row] = calloc(ret.width, sizeof(Vector));
-		ret.dem[row] = calloc(ret.width, sizeof(uint16_t));
-		ret.spherical_cloud[row] = calloc(ret.width, sizeof(SVector));
-
-		for(int col = left; col <= right; col++)
-		{
-			ret.cloud[row - up][col - left] = pc.cloud[row][col];
-			ret.dem[row - up][col - left] = pc.dem[row][col];
-			ret.spherical_cloud[row - up][col - left] = pc.spherical_cloud[row][col];
-		}
+		ret.cloud[row - up] = &pc.cloud[row][left];
+		ret.dem[row - up] = &pc.dem[row][left];
+		ret.spherical_cloud[row - up] = &pc.spherical_cloud[row][left];
 	}
 	return ret;
 }
@@ -39,7 +34,7 @@ Triangle* pointcloud_triangulate(PointCloud pc, int* length)
 
 	Triangle* tris = calloc(*length, sizeof(Triangle));
 
-	#pragma omp parallel for
+	// #pragma omp parallel for
 	for(int row = 0; row < pc.height - 1; row++)
 	{
 		for(int col = 0; col < pc.width - 1; col++)
@@ -130,6 +125,10 @@ void pointcloud_destroy(PointCloud pc)
 	for(int row = 0; row < pc.height; row++)
 	{
 		free(pc.cloud[row]);
+		free(pc.dem[row]);
+		free(pc.spherical_cloud[row]);
 	}
 	free(pc.cloud);
+	free(pc.dem);
+	free(pc.spherical_cloud);
 }

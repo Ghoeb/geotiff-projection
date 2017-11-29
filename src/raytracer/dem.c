@@ -45,7 +45,6 @@ DEM dem_read_from_file(const char* demfile)
 
 	/* Obtiene la referencia espacial de la proyección */
 	dem.hSpatialReference = OSRNewSpatialReference(GDALGetProjectionRef(hDataset));
-
   /** Matriz de alturas donde se guardará el raster, píxel por píxel */
   dem.heightmap = calloc(dem.height, sizeof(int16_t*));
 
@@ -112,7 +111,7 @@ PointCloud dem_to_point_cloud(DEM dem)
 	pc.dem = calloc(pc.height, sizeof(int16_t*));
   pc.spherical_cloud = calloc(pc.height, sizeof(SVector*));
 
-	#pragma omp parallel for
+	// #pragma omp parallel for
 	for(int row = 0; row < pc.height; row++)
 	{
     /* Latitud del punto */
@@ -190,6 +189,7 @@ Image* dem_to_img(DEM dem)
 /** Libera los recursos asociados al DEM */
 void dem_destroy(DEM dem)
 {
+  OSRRelease(dem.hSpatialReference);
 	for(int row = 0; row < dem.height; row++)
 	{
 		free(dem.heightmap[row]);

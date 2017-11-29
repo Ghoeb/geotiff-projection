@@ -74,23 +74,89 @@ BVH* bvh_build(PointCloud pc)
 		else
 		{
 			leftpc = pc_divide(pc, 0, pc.height/2, 0, pc.width - 1);
-			rightpc = pc_divide(pc, pc.height/2, pc.height, 0, pc.width - 1);
+			rightpc = pc_divide(pc, pc.height/2, pc.height - 1, 0, pc.width - 1);
 		}
 
 		bvh -> left_son = bvh_build(leftpc);
 		bvh -> right_son = bvh_build(rightpc);
 
+		free(leftpc.cloud);
+		free(rightpc.cloud);
+
+		free(leftpc.spherical_cloud);
+		free(rightpc.spherical_cloud);
+
+		free(leftpc.dem);
+		free(rightpc.dem);
+
 		bvh -> box = sbb_combine(bvh -> left_son -> box, bvh -> right_son -> box);
 	}
 	return bvh;
 }
+
 /** Intersecta el rayo con el triángulo más cercano dentro de la estructura */
 bool bvh_intersect(BVH* bvh, Ray* ray)
 {
-	return false;
+	if(bvh -> is_leaf)
+	{
+		/* Intersecta el rayo con todos los triángulos */
+		for(int tri = 0; tri < bvh -> tri_count; tri++)
+		{
+			ray_intersect(ray, &bvh -> tris[tri]);
+		}
+
+		return ray -> closestObject;
+	}
+	else
+	{
+		double t_left = INFINITY;
+		double t_right = INFINITY;
+
+		bool does_intersect_left = sbb_intersects(bvh -> left_son -> box, ray, &t_left);
+		bool does_intersect_right = sbb_intersects(bvh -> right_son -> box, ray, &t_right);
+
+		/* Si intersecta el izquierdo */
+		if(does_intersect_left)
+		{
+			/* Y además el derecho */
+			if(does_intersect_right)
+			{
+				/* Entonces el más cercano se prueba primero */
+				if(t_left < t_right)
+				{
+					return bvh_intersect(bvh -> left_son, ray) || bvh_intersect(bvh -> right_son, ray);
+				}
+				else
+				{
+					return bvh_intersect(bvh -> right_son, ray)|| bvh_intersect(bvh -> left_son, ray);
+				}
+			}
+			/* Si el derecho no intersecta */
+			else
+			{
+				return bvh_intersect(bvh -> left_son, ray);
+			}
+		}
+		/* Si solo el derecho intersecta */
+		else if(does_intersect_right)
+		{
+			return bvh_intersect(bvh -> right_son, ray);
+		}
+		return false;
+	}
 }
+
 /** Libera todos los recursos asociados a la estructura */
 void bvh_destroy(BVH* bvh)
 {
-
+	if(bvh -> is_leaf)
+	{
+		free(bvh -> tris);
+	}
+	else
+	{
+		bvh_destroy(bvh -> left_son);
+		bvh_destroy(bvh -> right_son);
+	}
+	free(bvh);
 }

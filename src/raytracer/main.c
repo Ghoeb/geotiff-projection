@@ -3,6 +3,8 @@
 #include "dem.h"
 #include "camera.h"
 #include <omp.h>
+#include <time.h>
+#include "bvh.h"
 
 int main(int argc, char *argv[])
 {
@@ -16,7 +18,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  omp_set_num_threads(omp_get_max_threads());
+  // omp_set_num_threads(omp_get_max_threads());
 
   DEM dem = dem_read_from_file(argv[1]);
 
@@ -31,25 +33,39 @@ int main(int argc, char *argv[])
 
   int length;
 
+  clock_t start = clock();
+
   Triangle* tris = pointcloud_triangulate(pc, &length);
 
-  printf("Triangulated point cloud\n");
+  double elapsed = ((double)(clock() - start)) / CLOCKS_PER_SEC;
+
+  printf("Triangulated point cloud in %lf seconds\n", elapsed);
+
+  start = clock();
+
+  BVH* bvh = bvh_build(pc);
+
+  elapsed = ((double)(clock() - start)) / CLOCKS_PER_SEC;
+
+  printf("Built BVH in %lf seconds\n", elapsed);
 
   // printf("There are %d triangles\n", length);
 
-  Camera cam = camera_init(pc, atoi(argv[3]), atof(argv[4]));
+  // Camera cam = camera_init(pc, atoi(argv[3]), atof(argv[4]));
 
-  Image* img = camera_render(cam, tris, length);
-
-  img_png_write_to_file(img, argv[2]);
-
-  img_png_destroy(img);
+  // Image* img = camera_render(cam, tris, length);
+  //
+  // img_png_write_to_file(img, argv[2]);
+  //
+  // img_png_destroy(img);
 
   free(tris);
 
   pointcloud_destroy(pc);
 
   dem_destroy(dem);
+
+  bvh_destroy(bvh);
 
 	return 0;
 }
