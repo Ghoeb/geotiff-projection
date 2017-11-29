@@ -13,16 +13,19 @@ PointCloud pc_divide(PointCloud pc, int up, int right, int down, int left)
 
 	ret.cloud = calloc(ret.height, sizeof(Vector*));
 	ret.dem = calloc(ret.height, sizeof(uint16_t*));
+	ret.spherical_cloud = calloc(ret.height, sizeof(SVector*));
 
 	for(int row = up; row <= down; row++)
 	{
 		ret.cloud[row] = calloc(ret.width, sizeof(Vector));
 		ret.dem[row] = calloc(ret.width, sizeof(uint16_t));
+		ret.spherical_cloud[row] = calloc(ret.width, sizeof(SVector));
 
 		for(int col = left; col <= right; col++)
 		{
 			ret.cloud[row - up][col - left] = pc.cloud[row][col];
 			ret.dem[row - up][col - left] = pc.dem[row][col];
+			ret.spherical_cloud[row - up][col - left] = pc.spherical_cloud[row][col];
 		}
 	}
 	return ret;

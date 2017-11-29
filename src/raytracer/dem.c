@@ -110,7 +110,7 @@ PointCloud dem_to_point_cloud(DEM dem)
 
 	pc.cloud = calloc(pc.height, sizeof(Vector*));
 	pc.dem = calloc(pc.height, sizeof(int16_t*));
-  pc.spherical_cloud = calloc(pc.height, sizeof(Vector*));
+  pc.spherical_cloud = calloc(pc.height, sizeof(SVector*));
 
 	#pragma omp parallel for
 	for(int row = 0; row < pc.height; row++)
@@ -120,7 +120,7 @@ PointCloud dem_to_point_cloud(DEM dem)
 
 		pc.cloud[row] = calloc(pc.width, sizeof(Vector));
 		pc.dem[row] = calloc(pc.width, sizeof(int16_t));
-    pc.spherical_cloud[row] = calloc(pc.width, sizeof(Vector));
+    pc.spherical_cloud[row] = calloc(pc.width, sizeof(SVector));
 
 		for(int col = 0; col < pc.width; col++)
 		{
@@ -144,9 +144,9 @@ PointCloud dem_to_point_cloud(DEM dem)
 			pc.dem[row][col] = dem.heightmap[row][col];
 
       /* Coordenadas esféricas del punto */
-      pc.spherical_cloud[row][col].X = lat;
-      pc.spherical_cloud[row][col].Y = lon;
-      pc.spherical_cloud[row][col].Z = vector_size(pc.cloud[row][col]);
+      pc.spherical_cloud[row][col].T = lat;
+      pc.spherical_cloud[row][col].P = lon;
+      pc.spherical_cloud[row][col].R = vector_size(pc.cloud[row][col]);
 		}
 	}
 

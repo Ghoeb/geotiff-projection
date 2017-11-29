@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../modules/geometry.h"
+#include "../modules/sphericalvector.h"
 #include <stdint.h>
 
 struct pointcloud
@@ -8,7 +9,7 @@ struct pointcloud
 	/** Nube de puntos, correspondiente a una matriz bidimensional */
 	Vector** cloud;
 	/** Nube de puntos, esta vez en coordenadas esféricas */
-	Vector** spherical_cloud;
+	SVector** spherical_cloud;
 	/** Las alturas sobre la superficie de la tierra */
 	int16_t** dem;
 	/** Ancho en celdas de la nube */
