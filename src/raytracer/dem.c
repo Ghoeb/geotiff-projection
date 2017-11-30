@@ -27,6 +27,8 @@ DEM dem_read_from_file(const char* demfile)
 	  .height = GDALGetRasterYSize( hDataset )
 	};
 
+
+  double geoTransform[6];
 	/* Obtiene las proporciones y posiciones LAT / LON */
   /* 0 = Origen X */
   /* 1 = Tamaño de pixel en longitud (X) */
@@ -34,17 +36,33 @@ DEM dem_read_from_file(const char* demfile)
   /* 3 = Origen Y */
   /* 4 = ??? */
   /* 5 = Tamaño del pixel en latitud (Y) (ES NEGATIVO SI EL DEM ES NORTH-UP) */
-	if(GDALGetGeoTransform( hDataset, dem.geoTransform) == CE_Failure)
+	if(GDALGetGeoTransform( hDataset, geoTransform) == CE_Failure)
   {
     GDALClose(hDataset);
+    abort();
   }
-
+  /* Latitud y longitud donde parte el mapa */
+  dem.start_lat = radians(geoTransform[3]);
+  dem.start_lon = radians(geoTransform[0]);
+  /* Latitud y longitud por pixel */
+  dem.lat_per_pixel = radians(geoTransform[5]);
+  dem.lon_per_pixel = radians(geoTransform[1]);
 
 	/* Obtiene el raster */
   GDALRasterBandH hBand = GDALGetRasterBand(hDataset, 1);
 
 	/* Obtiene la referencia espacial de la proyección */
-	dem.hSpatialReference = OSRNewSpatialReference(GDALGetProjectionRef(hDataset));
+  void* hSpatialReference = OSRNewSpatialReference(GDALGetProjectionRef(hDataset));
+  /* Ejes de la elipsoide */
+  double semimajor = OSRGetSemiMajor(hSpatialReference, NULL);
+	double semiminor = OSRGetSemiMinor(hSpatialReference, NULL);
+  /* Parámetros para conversión a cartesianas */
+	dem.a = semimajor;
+	dem.b = semimajor;
+	dem.c = semiminor;
+  /* Libera el coso */
+  OSRRelease(hSpatialReference);
+
   /** Matriz de alturas donde se guardará el raster, píxel por píxel */
   dem.heightmap = calloc(dem.height, sizeof(int16_t*));
 
@@ -81,24 +99,14 @@ DEM dem_read_from_file(const char* demfile)
 
 	GDALClose(hDataset);
 
+
+
+
 	return dem;
 }
 
 PointCloud dem_to_point_cloud(DEM dem)
 {
-	double semimajor = OSRGetSemiMajor(dem.hSpatialReference, NULL);
-	double semiminor = OSRGetSemiMinor(dem.hSpatialReference, NULL);
-
-	double a = semimajor;
-	double b = semimajor;
-	double c = semiminor;
-
-	/* Latitud y longitud donde parte el mapa */
-	double lat_s = radians(dem.geoTransform[3]);
-	double lon_s = radians(dem.geoTransform[0]);
-	/* Latitud y longitud por pixel */
-	double lat_per_pixel = radians(dem.geoTransform[5]);
-	double lon_per_pixel = radians(dem.geoTransform[1]);
 
   /* Grilla de puntos */
 	PointCloud pc =
@@ -114,7 +122,7 @@ PointCloud dem_to_point_cloud(DEM dem)
 	for(int row = 0; row < pc.height; row++)
 	{
     /* Latitud del punto */
-		double lat = lat_s + lat_per_pixel * row;
+		double lat = dem.start_lat + row * dem.lat_per_pixel;
 
 		pc.cloud[row] = calloc(pc.width, sizeof(Vector));
 		pc.dem[row] = calloc(pc.width, sizeof(int16_t));
@@ -122,22 +130,15 @@ PointCloud dem_to_point_cloud(DEM dem)
 		for(int col = 0; col < pc.width; col++)
 		{
       /* Longitud del punto */
-			double lon = lon_s + lon_per_pixel * col;
+			double lon = dem.start_lon + col * dem.lon_per_pixel;
+
+      /* La altura del punto sobre el nivel del mar */
+      double h = dem.heightmap[row][col];
 
       /* Posición del punto sobre la elipsoide */
-			pc.cloud[row][col] = (Vector)
-			{
-				.X = a * cos(lat) * cos(lon),
-				.Y = b * cos(lat) * sin(lon),
-				.Z = c * sin(lat)
-			};
+			pc.cloud[row][col] = dem_get_point(dem, lat, lon, h);
 
-      /* Se le suma su altura para que quede donde corresponde en la tierra */
-			Vector direction = vector_normalized(pc.cloud[row][col]);
-			double h = dem.heightmap[row][col];
-			vector_add_v(&pc.cloud[row][col], vector_multiplied_f(direction, h));
-
-      /* Altura del punto sobre el nivel del mar */
+      /* TODO Altura del punto sobre el nivel del mar */
 			pc.dem[row][col] = dem.heightmap[row][col];
 		}
 	}
@@ -178,11 +179,26 @@ Image* dem_to_img(DEM dem)
 	return img;
 }
 
+/** Obtiene las coordenadas cartesianas de un punto */
+Vector dem_get_point(DEM dem, double lat, double lon, double h)
+{
+  /* Posicion del punto a altura 0 sobre el nivel del mar */
+  Vector surface = (Vector)
+  {
+    .X = dem.a * cos(lat) * cos(lon),
+    .Y = dem.b * cos(lat) * sin(lon),
+    .Z = dem.c * sin(lat)
+  };
+  /* Se extiende el punto para que la altura sea la deseada */
+  Vector direction = vector_normalized(surface);
+  vector_add_v(&surface, vector_multiplied_f(direction, h));
+
+  return surface;
+}
 
 /** Libera los recursos asociados al DEM */
 void dem_destroy(DEM dem)
 {
-  OSRRelease(dem.hSpatialReference);
 	for(int row = 0; row < dem.height; row++)
 	{
 		free(dem.heightmap[row]);
